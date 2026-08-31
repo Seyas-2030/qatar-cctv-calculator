@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qatar MOI-SSD CCTV Storage & Compliance Calculator</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a8a',
+              950: '#0b1120',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+
+  <!-- TOP APP BAR / HEADER -->
+  <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand & Title -->
+      <div class="flex items-center space-x-3 rtl:space-x-reverse">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-xl shadow-lg shadow-blue-500/20">
+          📹
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-bold bg-gradient-to-r from-blue-400 via-indigo-200 to-slate-100 bg-clip-text text-transparent" data-i18n="appTitle">
+            حاسبة تخزين CCTV ومطابقة لوائح MOI-SSD قطر
+          </h1>
+          <p class="text-[11px] text-slate-400 hidden sm:block" data-i18n="appSubtitle">
+            الأداة الهندسية لحساب سعات التخزين والتحقق من لوائح وزارة الداخلية القطرية (قانون رقم 9 لسنة 2011)
+          </p>
+        </div>
+      </div>
+
+      <!-- Action Buttons & Language Switcher -->
+      <div class="flex items-center space-x-2 sm:space-x-3 rtl:space-x-reverse">
+        
+        <!-- Preset Dropdown -->
+        <div class="relative hidden md:block">
+          <select id="selectPreset" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500">
+            <option value="" data-i18n="presetTitle">📋 نماذج مشاريع جاهزة</option>
+            <option value="commercial" data-i18n="presetCommercial">برج تجاري / مكاتب (50 كاميرا)</option>
+            <option value="hotel" data-i18n="presetHotel">فندق ومنتجع 5 نجوم (120 كاميرا)</option>
+            <option value="bank" data-i18n="presetBank">فرع بنكي رئيسي (30 كاميرا)</option>
+            <option value="gov" data-i18n="presetGov">منشأة حيوية / حكومية (200 كاميرا)</option>
+          </select>
+        </div>
+
+        <!-- Language Toggle -->
+        <button id="langToggleBtn" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 flex items-center space-x-1.5 rtl:space-x-reverse transition-colors">
+          🌐 <span>English</span>
+        </button>
+
+        <!-- Save / Load JSON -->
+        <button id="btnExportJson" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-semibold transition-colors" title="حفظ المشروع">
+          💾
+        </button>
+        <button id="btnImportJson" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-semibold transition-colors" title="استيراد مشروع">
+          📂
+        </button>
+        <input type="file" id="inputImportFile" accept=".json" class="hidden" />
+
+        <!-- Export PDF Report -->
+        <button id="btnExportPdf" class="px-3.5 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-blue-600/30 flex items-center space-x-1.5 rtl:space-x-reverse transition-all">
+          <span>📄</span>
+          <span data-i18n="exportPdf">تصدير التقرير الفني (PDF)</span>
+        </button>
+
+        <!-- Reset Button -->
+        <button id="btnResetProject" class="p-2 rounded-lg bg-slate-800/60 hover:bg-rose-950/40 hover:text-rose-400 border border-slate-700 text-slate-400 text-xs transition-colors" title="إعادة ضبط">
+          🔄
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN DASHBOARD CONTENT -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+    <!-- KPI HERO CARDS -->
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
+      
+      <!-- KPI 1: Cameras -->
+      <div class="glass-panel p-4 flex flex-col justify-between border-slate-800">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-medium mb-1">
+          <span data-i18n="kpiTotalCameras">إجمالي الكاميرات</span>
+          <span>🎥</span>
+        </div>
+        <div id="kpiValCameras" class="text-2xl sm:text-3xl font-extrabold text-blue-400 font-mono">0</div>
+      </div>
+
+      <!-- KPI 2: Retention Days -->
+      <div class="glass-panel p-4 flex flex-col justify-between border-slate-800">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-medium mb-1">
+          <span data-i18n="retentionDays">مدة الاحتفاظ</span>
+          <span>📅</span>
+        </div>
+        <div id="kpiValRetention" class="text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono">120 <span class="text-xs text-slate-400 font-normal">يوم</span></div>
+      </div>
+
+      <!-- KPI 3: Net Storage -->
+      <div class="glass-panel p-4 flex flex-col justify-between border-slate-800">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-medium mb-1">
+          <span data-i18n="kpiNetStorage">صافي التخزين</span>
+          <span>💾</span>
+        </div>
+        <div id="kpiValNetStorage" class="text-2xl sm:text-3xl font-extrabold text-cyan-400 font-mono">0.00 <span class="text-xs text-slate-400 font-normal">TB</span></div>
+      </div>
+
+      <!-- KPI 4: Gross Storage -->
+      <div class="glass-panel p-4 flex flex-col justify-between border-slate-800 glow-blue">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-medium mb-1">
+          <span data-i18n="kpiGrossStorage">السعة الإجمالية</span>
+          <span>🗄️</span>
+        </div>
+        <div id="kpiValGrossStorage" class="text-2xl sm:text-3xl font-extrabold text-indigo-300 font-mono">0.00 <span class="text-xs text-slate-400 font-normal">TB</span></div>
+      </div>
+
+      <!-- KPI 5: Bandwidth -->
+      <div class="glass-panel p-4 flex flex-col justify-between border-slate-800">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-medium mb-1">
+          <span data-i18n="kpiTotalBandwidth">النطاق الترددي</span>
+          <span>⚡</span>
+        </div>
+        <div id="kpiValBandwidth" class="text-2xl sm:text-3xl font-extrabold text-amber-400 font-mono">0.0 <span class="text-xs text-slate-400 font-normal">Mbps</span></div>
+      </div>
+
+      <!-- KPI 6: HDDs -->
+      <div class="glass-panel p-4 flex flex-col justify-between border-slate-800">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-medium mb-1">
+          <span data-i18n="kpiRecommendedHdd">الأقراص المقترحة</span>
+          <span>💿</span>
+        </div>
+        <div id="kpiValHdd" class="text-2xl sm:text-3xl font-extrabold text-purple-400 font-mono">0 <span class="text-xs text-slate-400 font-normal">HDDs</span></div>
+      </div>
+
+      <!-- KPI 7: MOI Status -->
+      <div class="glass-panel p-4 flex flex-col justify-between border-slate-800 col-span-2 sm:col-span-1">
+        <div class="text-slate-400 text-xs font-medium mb-1" data-i18n="kpiMoiStatus">حالة MOI-SSD</div>
+        <div id="kpiValCompliance" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-950 border border-emerald-600 text-emerald-300 flex items-center justify-center space-x-1 rtl:space-x-reverse">
+          <span>✔</span> <span>مطابق</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SECTION 1: PROJECT METADATA & GLOBAL PARAMETERS (2-COLUMN GRID) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Project Metadata Card (7 cols) -->
+      <div class="lg:col-span-7 glass-panel overflow-hidden border-slate-800">
+        <div class="glass-header px-5 py-3.5 flex items-center justify-between">
+          <h2 class="text-sm font-bold text-slate-200 flex items-center space-x-2 rtl:space-x-reverse" data-i18n="projectInfoTitle">
+            <span>🏢</span> <span>بيانات المشروع والمنشأة</span>
+          </h2>
+          <span class="text-[11px] font-mono text-blue-400">Qatar MOI-SSD Standard</span>
+        </div>
+
+        <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div>
+            <label class="block text-slate-400 font-medium mb-1.5" data-i18n="projectName">اسم المشروع</label>
+            <input type="text" id="inputProjectName" class="w-full bg-slate-900/90 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 text-xs focus:outline-none" data-i18n-placeholder="projectNamePlaceholder" />
+          </div>
+
+          <div>
+            <label class="block text-slate-400 font-medium mb-1.5" data-i18n="clientName">اسم العميل / المالك</label>
+            <input type="text" id="inputClientName" class="w-full bg-slate-900/90 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 text-xs focus:outline-none" data-i18n-placeholder="clientNamePlaceholder" />
+          </div>
+
+          <div>
+            <label class="block text-slate-400 font-medium mb-1.5" data-i18n="facilityType">نوع المنشأة / التصنيف</label>
+            <select id="selectFacilityType" class="w-full bg-slate-900/90 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 text-xs focus:outline-none">
+              <option value="commercial" data-i18n="facilityCommercial">تجاري / مكاتب (Commercial)</option>
+              <option value="hotel" data-i18n="facilityHotel">فندقي / سياحي (Hospitality)</option>
+              <option value="bank" data-i18n="facilityBank">مؤسسة مالية / بنك (Financial/Banking)</option>
+              <option value="gov" data-i18n="facilityGov">منشأة حكومية / بنية حيوية (Government/Critical)</option>
+              <option value="residential" data-i18n="facilityResidential">مجمع سكني (Residential Compound)</option>
+              <option value="mall" data-i18n="facilityMall">مركز تسوق / تجزئة (Shopping Mall)</option>
+              <option value="other" data-i18n="facilityOther">أخرى (Other)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-slate-400 font-medium mb-1.5" data-i18n="consultantName">المهندس الاستشاري / المصمم</label>
+            <input type="text" id="inputConsultantName" class="w-full bg-slate-900/90 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 text-xs focus:outline-none" data-i18n-placeholder="consultantPlaceholder" />
+          </div>
+
+          <div>
+            <label class="block text-slate-400 font-medium mb-1.5" data-i18n="projectDate">تاريخ الدراسة</label>
+            <input type="date" id="inputProjectDate" class="w-full bg-slate-900/90 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 text-xs focus:outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-slate-400 font-medium mb-1.5" data-i18n="moiRefNumber">رقم رخصة / طلب MOI-SSD</label>
+            <input type="text" id="inputMoiRef" class="w-full bg-slate-900/90 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 text-xs focus:outline-none" data-i18n-placeholder="moiRefPlaceholder" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Global Sizing & RAID Parameters Card (5 cols) -->
+      <div class="lg:col-span-5 glass-panel overflow-hidden border-slate-800">
+        <div class="glass-header px-5 py-3.5 flex items-center justify-between">
+          <h2 class="text-sm font-bold text-slate-200 flex items-center space-x-2 rtl:space-x-reverse" data-i18n="globalSettingsTitle">
+            <span>⚙️</span> <span>المعايير العامة للنظام وحسابات التخزين</span>
+          </h2>
+        </div>
+
+        <div class="p-5 space-y-3.5 text-xs">
+          
+          <!-- Retention Days with Alert -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="text-slate-300 font-semibold" data-i18n="retentionDays">مدة الاحتفاظ بالتسجيلات (بالأيام)</label>
+              <span class="px-2 py-0.5 rounded text-[10px] bg-blue-900/80 border border-blue-700 text-blue-300 font-mono">MOI Min: 120 Days</span>
+            </div>
+            <input type="number" id="inputRetentionDays" min="1" max="730" class="w-full bg-slate-900/90 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 text-sm font-mono font-bold focus:outline-none" value="120" />
+            <p class="text-[11px] text-slate-500 mt-1" data-i18n="retentionDaysHelp">تشترط وزارة الداخلية القطرية 120 يوماً كحد أدنى إلزامي لمعظم المنشآت</p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-slate-400 font-medium mb-1.5" data-i18n="recordingHours">ساعات التسجيل اليومية</label>
+              <input type="number" id="inputHoursPerDay" min="1" max="24" class="w-full bg-slate-900/90 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 text-xs font-mono focus:outline-none" value="24" />
+            </div>
+
+            <div>
+              <label class="block text-slate-400 font-medium mb-1.5" data-i18n="raidLevel">نوع مصفوفة التخزين (RAID)</label>
+              <select id="selectRaidLevel" class="w-full bg-slate-900/90 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 text-xs focus:outline-none">
+                <option value="raid5" selected>RAID 5 (معيار MOI)</option>
+                <option value="raid6">RAID 6 (أمان عالي - منشآت حيوية)</option>
+                <option value="raid10">RAID 10 (Mirroring 50%)</option>
+                <option value="raid0">RAID 0 (غير آمن - غير مطابق)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-slate-400 font-medium mb-1.5" data-i18n="safetyMargin">هامش الأمان الهندسي</label>
+              <select id="inputSafetyMargin" class="w-full bg-slate-900/90 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 text-xs focus:outline-none">
+                <option value="10">10% Buffer</option>
+                <option value="15" selected>15% Buffer (موصى به)</option>
+                <option value="20">20% Buffer (توسعة مستقبلية)</option>
+                <option value="0">0% No Buffer</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-slate-400 font-medium mb-1.5" data-i18n="hotSpareDrives">أقراص الاحتياط الساخنة</label>
+              <input type="number" id="inputHotSpares" min="0" max="10" class="w-full bg-slate-900/90 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 text-xs font-mono focus:outline-none" value="1" />
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SECTION 2: CAMERA GROUPS SCHEDULE & MATRIX -->
+    <div class="glass-panel overflow-hidden border-slate-800">
+      <div class="glass-header px-5 py-3.5 flex items-center justify-between">
+        <div class="flex items-center space-x-2 rtl:space-x-reverse">
+          <span class="text-base">📹</span>
+          <h2 class="text-sm font-bold text-slate-200" data-i18n="cameraGroupsTitle">جدول ومواصفات مجموعات الكاميرات</h2>
+        </div>
+        <button id="btnAddCameraGroup" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center space-x-1.5 rtl:space-x-reverse transition-colors">
+          <span>➕</span> <span data-i18n="addCameraGroup">إضافة مجموعة كاميرات</span>
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-right rtl:text-right ltr:text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-900/90 text-slate-400 border-b border-slate-800">
+              <th class="p-3 text-center" style="width:40px;">#</th>
+              <th class="p-3" style="min-width:200px;" data-i18n="groupName">اسم المجموعة / الموقع</th>
+              <th class="p-3 text-center" style="width:90px;" data-i18n="cameraQty">العدد</th>
+              <th class="p-3" style="min-width:160px;" data-i18n="resolution">الدقة (Resolution)</th>
+              <th class="p-3" style="min-width:150px;" data-i18n="codec">الترميز (Codec)</th>
+              <th class="p-3 text-center" style="width:80px;" data-i18n="fps">الإطارات (FPS)</th>
+              <th class="p-3 text-center" style="width:110px;" data-i18n="bitrate">معدل البت</th>
+              <th class="p-3 text-center" style="width:130px;" data-i18n="motionFactor">نسبة النشاط</th>
+              <th class="p-3" style="min-width:220px;" data-i18n="targetCoverage">نسبة التغطية والغرض</th>
+              <th class="p-3 text-center" style="width:80px;" data-i18n="actions">الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="cameraGroupsTableBody">
+            <!-- Dynamic rows rendered via App.renderCameraGroups() -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SECTION 3: STORAGE ANALYSIS & HARD DRIVE SIZING MATRIX (2-COLUMN GRID) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Hard Drive Sizing Table (7 cols) -->
+      <div class="lg:col-span-7 glass-panel overflow-hidden border-slate-800">
+        <div class="glass-header px-5 py-3.5 flex items-center justify-between">
+          <h2 class="text-sm font-bold text-slate-200 flex items-center space-x-2 rtl:space-x-reverse" data-i18n="hddSizingTitle">
+            <span>💾</span> <span>توزيع الأقراص الصلبة وسيرفرات التخزين (Enterprise HDDs)</span>
+          </h2>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-right rtl:text-right ltr:text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-900/90 text-slate-400 border-b border-slate-800">
+                <th class="p-3" data-i18n="diskSize">سعة القرص الصلب</th>
+                <th class="p-3 text-center" data-i18n="disksNeeded">الأقراص المطلوبة</th>
+                <th class="p-3 text-center">تفصيل البيانات والاحتياط</th>
+                <th class="p-3 text-center">إجمالي السعة الخام</th>
+                <th class="p-3" data-i18n="chassisNeeded">سيرفر التخزين المقترح</th>
+              </tr>
+            </thead>
+            <tbody id="hddTableBody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Qatar MOI Compliance Audit Checklist (5 cols) -->
+      <div class="lg:col-span-5 glass-panel overflow-hidden border-slate-800">
+        <div class="glass-header px-5 py-3.5 flex items-center justify-between">
+          <h2 class="text-sm font-bold text-slate-200 flex items-center space-x-2 rtl:space-x-reverse" data-i18n="complianceTitle">
+            <span>🛡️</span> <span>سجل التدقيق والمطابقة لاشتراطات MOI-SSD</span>
+          </h2>
+        </div>
+
+        <div class="p-4 space-y-3" id="complianceRulesList">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SECTION 4: INTERACTIVE VISUALIZATIONS & CHARTS -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      
+      <!-- Chart 1: Donut Storage Breakdown -->
+      <div class="glass-panel p-5 border-slate-800 flex flex-col">
+        <h3 class="text-xs font-bold text-slate-300 mb-3 flex items-center space-x-2 rtl:space-x-reverse" data-i18n="chartStorageByGroup">
+          <span>📊</span> <span>توزيع السعة التخزينية حسب المجموعات (TB)</span>
+        </h3>
+        <div class="relative flex-1" style="min-height: 220px;">
+          <canvas id="chartStorageDonut"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart 2: Bandwidth Bar Chart -->
+      <div class="glass-panel p-5 border-slate-800 flex flex-col">
+        <h3 class="text-xs font-bold text-slate-300 mb-3 flex items-center space-x-2 rtl:space-x-reverse" data-i18n="chartBandwidthByGroup">
+          <span>⚡</span> <span>استهلاك النطاق الترددي للشبكة (Mbps)</span>
+        </h3>
+        <div class="relative flex-1" style="min-height: 220px;">
+          <canvas id="chartBandwidthBar"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart 3: Retention Comparison -->
+      <div class="glass-panel p-5 border-slate-800 flex flex-col">
+        <h3 class="text-xs font-bold text-slate-300 mb-3 flex items-center space-x-2 rtl:space-x-reverse" data-i18n="chartRetentionTimeline">
+          <span>📅</span> <span>مقارنة السعة عبر مدد التخزين المختلفة (TB)</span>
+        </h3>
+        <div class="relative flex-1" style="min-height: 220px;">
+          <canvas id="chartRetentionTimeline"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-slate-900/60 border-t border-slate-800/80 py-4 px-4 text-center text-xs text-slate-500 space-y-1">
+    <p data-i18n="disclaimer">ملاحظة هندسية: هذه الحسابات استرشادية وتخضع للمراجعة والاعتماد النهائي من قِبل إدارة النظم الأمنية بوزارة الداخلية القطرية (MOI-SSD).</p>
+    <p data-i18n="allRightsReserved">تم التطوير وفقاً لأحدث المعايير الهندسية للأمن والمراقبة الذكية في دولة قطر.</p>
+  </footer>
+
+  <!-- APPLICATION SCRIPTS -->
+  <script src="js/i18n.js"></script>
+  <script src="js/calculator.js"></script>
+  <script src="js/compliance.js"></script>
+  <script src="js/pdf-exporter.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
