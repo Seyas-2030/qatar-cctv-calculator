@@ -1,3 +1,6 @@
+<img width="1391" height="1034" alt="Screenshot 2026-11-25 204341" src="https://github.com/user-attachments/assets/291a7d92-c07b-41bc-aad3-ba3a49475f20" />
+<img width="1409" height="1031" alt="Screenshot 2026-11-25 204331" src="https://github.com/user-attachments/assets/3d25d39f-2f8b-4b46-b667-cede8fcd2fce" />
+<img width="1411" height="1031" alt="Screenshot 2026-11-25 204319" src="https://github.com/user-attachments/assets/3c3e2e8e-1bba-4e95-9e26-23fa0ba8d1f8" />
 # حاسبة سعة التخزين ومطابقة اشتراطات MOI-SSD لأنظمة CCTV
 ## Qatar MOI-SSD CCTV Storage & Compliance Calculator
 
