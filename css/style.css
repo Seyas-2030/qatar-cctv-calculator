@@ -1,5 +1,6 @@
-/* Google Fonts: Cairo (Arabic) & Inter (English) */
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --bg-main: #0b1120;
@@ -53,17 +54,8 @@ body {
   background: #3b82f6;
 }
 
-/* Glow effects */
-.glow-emerald {
-  box-shadow: 0 0 20px -3px rgba(16, 185, 129, 0.3);
-}
-
 .glow-blue {
   box-shadow: 0 0 20px -3px rgba(59, 130, 246, 0.3);
-}
-
-.glow-rose {
-  box-shadow: 0 0 20px -3px rgba(244, 63, 94, 0.3);
 }
 
 /* Input elements styling */
@@ -75,28 +67,6 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) !important;
 }
 
-/* Badges & Pills */
-.badge-tech {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.625rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.025em;
-}
-
-/* Animations */
-@keyframes pulse-subtle {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-.pulse-icon {
-  animation: pulse-subtle 2.5s infinite;
-}
-
-/* Print Stylesheet */
 @media print {
   body {
     background: #fff !important;
