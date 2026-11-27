@@ -1,84 +1,48 @@
 <img width="1391" height="1034" alt="Screenshot 2026-11-25 204341" src="https://github.com/user-attachments/assets/291a7d92-c07b-41bc-aad3-ba3a49475f20" />
 <img width="1409" height="1031" alt="Screenshot 2026-11-25 204331" src="https://github.com/user-attachments/assets/3d25d39f-2f8b-4b46-b667-cede8fcd2fce" />
 <img width="1411" height="1031" alt="Screenshot 2026-11-25 204319" src="https://github.com/user-attachments/assets/3c3e2e8e-1bba-4e95-9e26-23fa0ba8d1f8" />
+
 # حاسبة سعة التخزين ومطابقة اشتراطات MOI-SSD لأنظمة CCTV
 ## Qatar MOI-SSD CCTV Storage & Compliance Calculator
 
-تطبيق ويب هندسي ثنائي اللغة (العربية والإنجليزية) مخصص لمهندسي الأنظمة الأمنية والمبيعات والتصميم لحساب سعات التخزين والنطاق الترددي للأنظمة الأمنية (CCTV) والتحقق التلقائي من مطابقة اشتراطات وضوابط **إدارة النظم الأمنية بوزارة الداخلية القطرية (MOI-SSD)** بموجب **القانون رقم (9) لسنة 2011**.
+تطبيق ويب هندسي ثنائي اللغة (العربية والإنجليزية) يعمل دون اتصال بالإنترنت (Offline-First PWA)، مخصص لمهندسي الأنظمة الأمنية لحساب سعات التخزين المطلوبة، والنطاق الترددي للشبكة، وأحمال الطاقة الكهربائية و الـ UPS، وكثافة البكسل (PPM/PPF)، مع التحقق التلقائي من مطابقة التصميم لاشتراطات **إدارة النظم الأمنية بوزارة الداخلية القطرية (MOI-SSD)** وفق القانون رقم (9) لسنة 2011، وتصدير التقارير الفنية (PDF) وجداول الكميات (CSV).
 
 ---
 
-## 🌟 الميزات الرئيسية (Key Features)
+### مثال على اختبار البرنامج (Test Example)
 
-1. **دعم كامل للغتين العربية والإنجليزية (Bilingual AR/EN):**
-   * تبديل فوري بضغطة زر مع تحول كامل في الاتجاه والتخطيط (`RTL` $\leftrightarrow$ `LTR`).
-2. **محرك الحسابات الهندسية الدقيقة:**
-   * حساب سعة التخزين الصافية (Net Storage in TB/PB) والنطاق الترددي المباشر (Bandwidth in Mbps/Gbps).
-   * تطبيق معادلة الفيديو المعتمدة مع مراعاة وفورات الضغط في كوديك `H.264` و `H.265` (توفير 50%) و `H.265+` (توفير 65%).
-   * حساب مصفوفات التخزين `RAID 5` و `RAID 6` و `RAID 10` مع هامش الأمان الهندسي وأقراص الاحتياط (Hot Spares).
-3. **مدقق الامتثال لاشتراطات وزارة الداخلية القطرية (MOI-SSD Regulatory Checker):**
-   * فحص إلزامي لمدة الاحتفاظ $\ge 120$ يوماً متواصلة مع تنبيهات فورية.
-   * فحص دقة الكاميرات الشبكية (Full HD 1080p كحد أدنى).
-   * فحص نسب التغطية بالهدف (ANPR $\ge 50\%$, Identification $\ge 50\%$, Detection $\ge 10\%$).
-   * التحقق من موثوقية مصفوفات التخزين ومصادر الطاقة غير المنقطعة (UPS).
-4. **حاسبة الأقراص الصلبة وسيرفرات التخزين (HDD Sizing & Storage Enclosures):**
-   * اقتراح تلقائي لعدد الأقراص المطلوبة بسعات 8TB, 10TB, 12TB, 14TB, 16TB, 18TB, 20TB, 24TB.
-   * تقدير عدد شاسيهات التخزين (16-Bay, 24-Bay, 36-Bay).
-5. **نماذج مشاريع جاهزة بضغطة زر (Preset Templates):**
-   * برج تجاري / مكاتب (50 كاميرا).
-   * فندق ومنتجع فاخر 5 نجوم (120 كاميرا).
-   * فرع بنكي رئيسي (30 كاميرا).
-   * منشأة حكومية / بنية تحتية حيوية (200 كاميرا).
-6. **تصدير التقارير الفنية الرسمية (PDF Export & Print):**
-   * توليد تقرير فني معتمد بضغطة زر بتنسيق A4 جاهز للطباعة أو الحفظ كـ PDF ومطابق لمتطلبات التقديم لدى MOI-SSD.
-7. **حفظ واستيراد المشاريع (JSON Backup & LocalStorage Auto-save):**
-   * حفظ تلقائي فوري في المتصفح مع إمكانية تصدير واستيراد ملفات JSON لمشاركتها مع فريق العمل.
+```js
+import { describe, it, expect } from 'vitest';
+import { Calculator } from './js/calculator.js';
+import { ComplianceValidator } from './js/compliance.js';
 
----
+describe('Qatar MOI-SSD Compliance Check', () => {
+  it('validates a compliant commercial CCTV project', () => {
+    const project = {
+      facilityType: 'commercial',
+      retentionDays: 120,
+      hoursPerDay: 24,
+      raidLevel: 'raid5',
+      safetyMargin: 15,
+      hotSpareDrives: 1,
+      hasUps: true,
+      upsBackupMinutes: 60,
+      cameraGroups: [
+        { id: 1, name: 'Gate ANPR', qty: 4, resolution: '4mp', codec: 'h265', fps: 25, isAutoBitrate: true, motionFactor: 100, targetCoverage: 'covAnpr' }
+      ]
+    };
 
-## 🚀 كيفية تشغيل البرنامج (How to Run)
+    const calc = Calculator.calculateProjectTotals(project);
+    const compliance = ComplianceValidator.validate(project, calc, 'en');
 
-البرنامج مصمم كـ **Single Page Web Application (SPA)** جاهز للعمل فوراً:
+    expect(compliance.isFullyCompliant).toBe(true);
+    expect(compliance.passedCount).toBe(5);
+  });
+});
+```
 
-### الطريقة 1: الفتح المباشر
-* فقط انقر نقراً مزدوجاً على ملف [`index.html`](file:///c:/Users/salah/OneDrive/سطح%20المكتب/CCTV/index.html) في أي متصفح ويب (Google Chrome, Microsoft Edge, Firefox, Safari).
-
-### الطريقة 2: التشغيل عبر خادم محلي (Local Server)
-باستخدام بايثون:
+لتشغيل الاختبارات:
 ```bash
-python -m http.server 8000
-```
-ثم افتح الرابط في المتصفح: `http://localhost:8000`
-
----
-
-## 📐 المعادلات الهندسية المستخدمة (Mathematical Formulas)
-
-### 1. معادلة حجم التخزين الصافي:
-$$\text{Storage (GB)} = \left(\frac{\text{Bitrate (Mbps)}}{8}\right) \times 3600 \times \text{Hours/Day} \times \text{Retention Days} \times \text{Cameras Quantity} \times \left(\frac{\text{Motion \%}}{100}\right)$$
-
-$$\text{Net Storage (TB)} = \frac{\text{Storage (GB)}}{1024}$$
-
-### 2. معادلة السعة الكلية مع مصفوفة RAID وهامش الأمان:
-$$\text{Gross Storage (TB)} = \left(\frac{\text{Net Storage (TB)}}{\text{RAID Efficiency}}\right) \times (1 + \text{Safety Buffer})$$
-* **RAID 5:** كفاءة الاستخدام $\approx 85\%$
-* **RAID 6:** كفاءة الاستخدام $\approx 75\%$
-* **RAID 10:** كفاءة الاستخدام $= 50\%$
-
----
-
-## 📁 هيكل ملفات المشروع (File Structure)
-
-```
-CCTV/
-├── index.html               # واجهة المستخدم الرئيسية ولوحة التحكم
-├── css/
-│   └── style.css            # ملف التنسيق المخصص ودعم الخطوط والطباعة
-├── js/
-│   ├── app.js               # المتحكم الرئيسي وإدارة الحالة والرسوم البيانية
-│   ├── calculator.js        # محرك الحسابات الهندسية ومصفوفات التخزين
-│   ├── compliance.js        # مدقق الامتثال لاشتراطات وزارة الداخلية القطرية
-│   ├── i18n.js              # القاموس الثنائي الشامل للغتين العربية والإنجليزية
-│   └── pdf-exporter.js      # محرك توليد وتصدير التقارير الفنية للطباعة و PDF
-└── README.md                # دليل التوثيق والتشغيل
+npm install
+npm test
 ```
